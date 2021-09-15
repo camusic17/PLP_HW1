@@ -3,14 +3,15 @@ package edu.ufl.cise.plpfa21.assignment1;
 public class Token implements IPLPToken{
 	
 	Kind kind;
-	public int pos;
-	public int length;
+	public int pos, length, line, posInLine;
 	
-	Token(Kind kind, int pos, int length)
+	Token(Kind kind, int pos, int length, int line, int posInLine)
 	{
 		this.kind = kind;
 		this.pos = pos;
 		this.length = length;
+		this.line = line; 
+		this.posInLine = posInLine;
 	}
 
 	@Override

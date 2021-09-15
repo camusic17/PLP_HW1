@@ -2,6 +2,7 @@ package edu.ufl.cise.plpfa21.assignment1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
 
@@ -12,6 +13,8 @@ public class Lexer implements IPLPLexer {
 	private char[] chars; //holds characters with 0 at the end
 	private int nextTokenPos = 0;
 	static final char EOFchar = 0;
+	
+	public HashMap<String, Kind> keywords = new HashMap<String, Kind>();
 	
 	//enums for dfa states
 	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART}
@@ -36,6 +39,31 @@ public class Lexer implements IPLPLexer {
 		tokens = new ArrayList<>();
 		
 		String digits = "";
+		String inProgIdent = "";
+		
+		//add keywords to HashMap for ident check
+		keywords.put("FUN",Kind.KW_FUN);
+		keywords.put("DO",Kind.KW_DO);
+		keywords.put("END",Kind.KW_END);
+		keywords.put("LET",Kind.KW_LET);
+		keywords.put("SWITCH",Kind.KW_SWITCH);
+		keywords.put("CASE",Kind.KW_CASE);
+		keywords.put("DEFAULT",Kind.KW_DEFAULT);
+		keywords.put("IF",Kind.KW_IF);
+		keywords.put("ELSE",Kind.KW_ELSE);
+		keywords.put("WHILE",Kind.KW_WHILE);
+		keywords.put("RETURN",Kind.KW_RETURN);
+		keywords.put("LIST",Kind.KW_LIST);
+		keywords.put("VAR",Kind.KW_VAR);
+		keywords.put("VAL",Kind.KW_VAL);
+		keywords.put("NIL",Kind.KW_NIL);
+		keywords.put("TRUE",Kind.KW_TRUE);
+		keywords.put("FALSE",Kind.KW_FALSE);
+		keywords.put("INT",Kind.KW_INT);
+		keywords.put("STRING",Kind.KW_STRING);
+		keywords.put("FLOAT",Kind.KW_FLOAT);
+		keywords.put("BOOLEAN",Kind.KW_BOOLEAN);
+		
 		//loop that scans through every character and builds the token array
 		while(pos<chars.length)
 		{
@@ -208,14 +236,17 @@ public class Lexer implements IPLPLexer {
 							state = State.INTLITERAL;
 							digits += ch;
 							pos++;
+							posInLine++;
 						}
 						default -> 
 						{
 							if(Character.isJavaIdentifierStart(ch))
 							{
+								inProgIdent += ch;
 								pos++;
 								posInLine++;
 								state = State.IDENT_PART;
+								
 							}
 							else	
 							{
@@ -224,6 +255,7 @@ public class Lexer implements IPLPLexer {
 									//handle error
 								}
 								pos++;
+								posInLine++;
 							}
 						}
 					}
@@ -290,22 +322,17 @@ public class Lexer implements IPLPLexer {
 					}
 				}
 				case INTLITERAL ->
-				{
-					
-					
-					
+				{					
 					if(Character.isDigit(ch))
 					{
 						digits += ch;
-						System.out.println("char: " + Character.toString(ch));
+						//System.out.println("char: " + Character.toString(ch));
 						pos++;
 						posInLine++;
 					}
 					else
 					{
-						System.out.println("digits: " + digits);
-						
-						
+						//System.out.println("digits: " + digits);						
 						try
 						{
 							Integer.parseInt(digits);
@@ -322,7 +349,30 @@ public class Lexer implements IPLPLexer {
 				}
 				case IDENT_PART ->
 				{
-					
+					if(Character.isJavaIdentifierPart(ch) && ch != EOFchar)
+					{
+						inProgIdent += ch;
+						pos++;
+						posInLine++;
+						//System.out.println("got here");
+						//System.out.println("ident: " + inProgIdent);
+					}
+					else
+					{
+						//System.out.println("ident: " + inProgIdent);
+						//check if inProgIdent is a reserved word
+						if(keywords.containsKey(inProgIdent))
+						{
+							//System.out.println("got here");
+							tokens.add(new Token(keywords.get(inProgIdent),startPos, pos- startPos, line, posInLine ));
+						}
+						else
+						{
+							tokens.add(new Token(Kind.IDENTIFIER,startPos, pos- startPos, line, posInLine ));
+						}
+						state = State.START;
+						inProgIdent = "";
+					}
 				}
 			}
 		}

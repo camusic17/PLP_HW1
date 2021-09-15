@@ -119,6 +119,48 @@ class ExampleLexerTests implements PLPTokenKinds {
 			Integer.parseInt(input);
 		});
 	}
+	
+	@Test
+	public void test13() throws LexicalException {
+		String input = "INT";
+		IPLPLexer lexer = getLexer(input);
+		IPLPToken token = lexer.nextToken();
+		Kind kind = token.getKind();
+		int pos = token.getCharPositionInLine();
+		
+		assertEquals(Kind.KW_INT,kind);
+		assertEquals(0, pos);
+	}
+	
+	@Test
+	public void test14() throws LexicalException {
+		String input = "$abc";
+		IPLPLexer lexer = getLexer(input);
+		IPLPToken token = lexer.nextToken();
+		Kind kind = token.getKind();
+		int pos = token.getCharPositionInLine();
+		
+		assertEquals(Kind.IDENTIFIER, kind);
+		assertEquals(0, pos);
+	}
+	
+	@Test
+	public void test15() throws LexicalException {
+		String input = "$abc BOOLEAN";
+		IPLPLexer lexer = getLexer(input);
+		IPLPToken token = lexer.nextToken();
+		Kind kind = token.getKind();
+		int pos = token.getCharPositionInLine();
+		
+		assertEquals(Kind.IDENTIFIER, kind);
+		assertEquals(0, pos);
+		
+		token = lexer.nextToken();
+		kind = token.getKind();
+		pos = token.getCharPositionInLine();
+		assertEquals(Kind.KW_BOOLEAN, kind);
+		assertEquals(5, pos);
+	}
 
 	@Test
 	public void test0() throws LexicalException {
@@ -310,15 +352,15 @@ class ExampleLexerTests implements PLPTokenKinds {
 //		});
 //	}
 //
-	@Test
-	public void test5() throws LexicalException {
-		String input = """
-				99999999999999999999999999999999999999999999999999999999999999999999999
-				""";
-		IPLPLexer lexer = getLexer(input);
-		assertThrows(NumberFormatException.class, () -> {
-			Integer.parseInt(input);
-		});
-	}
+//	@Test
+//	public void test5() throws LexicalException {
+//		String input = """
+//				99999999999999999999999999999999999999999999999999999999999999999999999
+//				""";
+//		IPLPLexer lexer = getLexer(input);
+//		assertThrows(NumberFormatException.class, () -> {
+//			Integer.parseInt(input);
+//		});
+//	}
 
 }

@@ -52,6 +52,7 @@ public class Token implements IPLPToken{
 	@Override
 	public String getStringValue() {
 		// TODO Auto-generated method stub
+		//need to figure out EscapeSeq and StringLits
 		return null;
 	}
 

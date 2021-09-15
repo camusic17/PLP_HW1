@@ -374,11 +374,80 @@ class ExampleLexerTests implements PLPTokenKinds {
 		int pos = token.getCharPositionInLine();
 		int line = token.getLine();
 		
+		
 		assertEquals(Kind.EOF, kind);
 		assertEquals(0, pos);
 		assertEquals(2, line);
 		
+		
 	
+	}
+	@Test
+	public void test17() throws LexicalException {
+		String input = "abc\n123";
+		IPLPLexer lexer = getLexer(input);
+		IPLPToken token = lexer.nextToken();
+		int pos = token.getCharPositionInLine();
+		int line = token.getLine();		
+		String text = token.getText();
+				
+		assertEquals("abc",text);
+		assertEquals(0, pos);
+		assertEquals(1, line);
+		
+		token = lexer.nextToken();
+		pos = token.getCharPositionInLine();
+		line = token.getLine();		
+		text = token.getText();
+		
+		assertEquals("123",text);
+		assertEquals(0, pos);
+		assertEquals(2, line);
+	
+	}
+	
+	@Test
+	public void test18() throws LexicalException {
+		String input = "IF(x < 7){};";
+		IPLPLexer lexer = getLexer(input);
+		IPLPToken token = lexer.nextToken();
+		int pos = token.getCharPositionInLine();
+		int line = token.getLine();		
+		String text = token.getText();
+				
+		assertEquals("IF",text);
+		assertEquals(0, pos);
+		assertEquals(1, line);
+		
+		token = lexer.nextToken();
+		pos = token.getCharPositionInLine();
+		line = token.getLine();		
+		text = token.getText();
+		
+		assertEquals("(",text);
+		assertEquals(2, pos);
+		assertEquals(1, line);
+		
+		token = lexer.nextToken();
+		pos = token.getCharPositionInLine();
+		line = token.getLine();		
+		text = token.getText();
+		
+		assertEquals("x",text);
+		assertEquals(3, pos);
+		assertEquals(1, line);
+	
+	}
+	
+	@Test
+	public void test19() throws LexicalException {
+		String input = "&1";
+		IPLPLexer lexer = getLexer(input);
+		{
+			assertThrows(LexicalException.class, () -> {
+				IPLPToken token = lexer.nextToken();
+			});
+		}
 	}
 
 }

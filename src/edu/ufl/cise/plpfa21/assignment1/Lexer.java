@@ -98,8 +98,7 @@ public class Lexer implements IPLPLexer {
 							posInLine = 1;
 						}
 						case '=' ->
-						{
-							
+						{							
 							state = State.HAVE_EQUAL;
 							//index
 							pos++;
@@ -194,11 +193,9 @@ public class Lexer implements IPLPLexer {
 							pos++;
 							posInLine++;
 						}
-						//fix
 						case '!' ->
 						{
-							state = State.HAVE_NOT;
-							
+							state = State.HAVE_NOT;							
 							//index
 							pos++;
 							posInLine++;

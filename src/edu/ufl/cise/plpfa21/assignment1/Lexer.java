@@ -14,17 +14,10 @@ public class Lexer implements IPLPLexer {
 	static final char EOFchar = 0;
 	
 	//enums for dfa states
-	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, DIGITS, IDENT_PART}
+	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART}
 	
-	public static class CharException extends Exception
-	{
-		public CharException(String err)
-		{
-			System.out.print(err);
-		}
-	}
 	
-	public ArrayList<IPLPToken> SimpleScanner(String inputString) throws CharException
+	public ArrayList<IPLPToken> SimpleScanner(String inputString) throws LexicalException
 	{
 		//creating char array from inputString
 		int numChars = inputString.length();
@@ -32,6 +25,7 @@ public class Lexer implements IPLPLexer {
 		
 		//indexing setup
 		int pos = 0;
+		int startPos = 0;
 		int line = 1;
 		int posInLine = 1;
 		
@@ -41,16 +35,18 @@ public class Lexer implements IPLPLexer {
 		chars[numChars] = EOFchar;
 		tokens = new ArrayList<>();
 		
+		String digits = "";
 		//loop that scans through every character and builds the token array
 		while(pos<chars.length)
 		{
-			System.out.println(pos);
-			System.out.println("length: " + chars.length);
+			//System.out.println(pos);
+			//System.out.println("length: " + chars.length);
 			char ch = chars[pos];
 			switch(state)
 			{
 				case START ->
 				{
+					startPos = pos;
 					switch(ch)
 					{
 						//need to handle other kinds of whitespace
@@ -207,6 +203,12 @@ public class Lexer implements IPLPLexer {
 							pos++;
 							posInLine++;
 						}
+						case '0','1','2','3','4','5','6','7','8','9' ->
+						{
+							state = State.INTLITERAL;
+							digits += ch;
+							pos++;
+						}
 						default -> 
 						{
 							if(Character.isJavaIdentifierStart(ch))
@@ -254,7 +256,7 @@ public class Lexer implements IPLPLexer {
 					else
 					{
 						//throw error
-						throw new CharException(ch + " at line " + line + ", pos " + pos);
+						throw new LexicalException("Unexpected token",line,pos);
 					}
 				}
 				case HAVE_OR ->
@@ -269,7 +271,7 @@ public class Lexer implements IPLPLexer {
 					else
 					{
 						//throw error
-						throw new CharException(ch + " at line " + line + ", pos " + pos);
+						throw new LexicalException("Unexpected token",line,pos);
 					}
 				}
 				case HAVE_NOT ->
@@ -287,9 +289,36 @@ public class Lexer implements IPLPLexer {
 						state = State.START;
 					}
 				}
-				case DIGITS ->
+				case INTLITERAL ->
 				{
 					
+					
+					
+					if(Character.isDigit(ch))
+					{
+						digits += ch;
+						System.out.println("char: " + Character.toString(ch));
+						pos++;
+						posInLine++;
+					}
+					else
+					{
+						System.out.println("digits: " + digits);
+						
+						
+						try
+						{
+							Integer.parseInt(digits);
+							tokens.add(new Token(Kind.INT_LITERAL, startPos,pos - startPos,line,posInLine));
+						}
+						catch(NumberFormatException e)
+						{
+							throw new LexicalException("Number too large", line, pos);
+						}
+						
+						state = State.START;
+						digits = "";
+					}
 				}
 				case IDENT_PART ->
 				{

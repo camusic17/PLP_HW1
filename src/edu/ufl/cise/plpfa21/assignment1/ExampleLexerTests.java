@@ -79,6 +79,46 @@ class ExampleLexerTests implements PLPTokenKinds {
 			
 		}
 	}
+	
+	@Test
+	public void test10() throws LexicalException {
+		String input = "1";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			int pos = token.getCharPositionInLine();
+			int line = token.getLine();
+			assertEquals(kind, Kind.INT_LITERAL);
+			
+			
+		}
+	}
+	
+	@Test
+	public void test11() throws LexicalException {
+		String input = "12";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			int pos = token.getCharPositionInLine();
+			int line = token.getLine();
+			assertEquals(kind, Kind.INT_LITERAL);
+			assertEquals(pos, 0);
+			
+			
+		}
+	}
+	
+	@Test
+	public void test12() throws LexicalException {
+		String input = "99999999999999999999999999999999999999999999999999999999999999999999999";
+		IPLPLexer lexer = getLexer(input);
+		assertThrows(NumberFormatException.class, () -> {
+			Integer.parseInt(input);
+		});
+	}
 
 	@Test
 	public void test0() throws LexicalException {
@@ -270,16 +310,15 @@ class ExampleLexerTests implements PLPTokenKinds {
 //		});
 //	}
 //
-//	@Test
-//	public void test5() throws LexicalException {
-//		String input = """
-//				99999999999999999999999999999999999999999999999999999999999999999999999
-//				""";
-//		IPLPLexer lexer = getLexer(input);
-//		assertThrows(LexicalException.class, () -> {
-//			@SuppressWarnings("unused")
-//			IPLPToken token = lexer.nextToken();
-//		});
-//	}
+	@Test
+	public void test5() throws LexicalException {
+		String input = """
+				99999999999999999999999999999999999999999999999999999999999999999999999
+				""";
+		IPLPLexer lexer = getLexer(input);
+		assertThrows(NumberFormatException.class, () -> {
+			Integer.parseInt(input);
+		});
+	}
 
 }

@@ -29,13 +29,13 @@ public class Token implements IPLPToken{
 	@Override
 	public int getLine() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.line;
 	}
 
 	@Override
 	public int getCharPositionInLine() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.pos;
 	}
 
 	@Override

@@ -40,6 +40,45 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(kind, Kind.RPAREN);
 		}
 	}
+	
+	@Test
+	public void test8() throws LexicalException {
+		String input = "+";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			int pos = token.getCharPositionInLine();
+			int line = token.getLine();
+			assertEquals(kind, Kind.PLUS);
+			assertEquals(pos,0);
+			assertEquals(line,1);
+			
+		}
+	}
+	
+	@Test
+	public void test9() throws LexicalException {
+		String input = "+	-";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			int pos = token.getCharPositionInLine();
+			int line = token.getLine();
+			assertEquals(kind, Kind.PLUS);
+			assertEquals(pos,0);
+			assertEquals(line,1);
+			
+			token = lexer.nextToken();
+			kind = token.getKind();
+			pos = token.getCharPositionInLine();
+			line = token.getLine();
+			assertEquals(pos,2);
+			assertEquals(line,1);
+			
+		}
+	}
 
 	@Test
 	public void test0() throws LexicalException {

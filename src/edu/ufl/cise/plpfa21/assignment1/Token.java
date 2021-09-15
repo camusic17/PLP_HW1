@@ -4,14 +4,16 @@ public class Token implements IPLPToken{
 	
 	Kind kind;
 	public int pos, length, line, posInLine;
+	String input;
 	
-	Token(Kind kind, int pos, int length, int line, int posInLine)
+	Token(Kind kind, int pos, int length, int line, int posInLine, String input)
 	{
 		this.kind = kind;
 		this.pos = pos;
 		this.length = length;
 		this.line = line; 
 		this.posInLine = posInLine;
+		this.input = input;
 	}
 
 	@Override
@@ -23,7 +25,16 @@ public class Token implements IPLPToken{
 	@Override
 	public String getText() {
 		// TODO Auto-generated method stub
-		return null;
+		if(this.input.substring(pos,pos+length).length()>0)
+		{
+			return this.input.substring(pos,pos+length);
+		}
+		else
+		{
+			return null;
+		}
+		
+		
 	}
 
 	@Override
@@ -35,7 +46,7 @@ public class Token implements IPLPToken{
 	@Override
 	public int getCharPositionInLine() {
 		// TODO Auto-generated method stub
-		return this.pos;
+		return this.posInLine-1;
 	}
 
 	@Override
@@ -47,7 +58,15 @@ public class Token implements IPLPToken{
 	@Override
 	public int getIntValue() {
 		// TODO Auto-generated method stub
-		return 0;
+		if(this.input.substring(pos,pos+length).length()>0)
+		{			
+			return Integer.valueOf(this.input.substring(pos,pos+length));
+		}
+		else
+		{
+			return 0;
+		}
+		
 	}
 
 }

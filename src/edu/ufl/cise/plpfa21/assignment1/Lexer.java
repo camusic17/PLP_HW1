@@ -17,7 +17,7 @@ public class Lexer implements IPLPLexer {
 	public HashMap<String, Kind> keywords = new HashMap<String, Kind>();
 	
 	//enums for dfa states
-	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART}
+	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART, HAVE_SLASH, HAVE_MCOMMENT, HAVE_SCOMMENT}
 	
 	
 	public Lexer(String inputString) 
@@ -226,9 +226,11 @@ public class Lexer implements IPLPLexer {
 						}
 						case '/' ->
 						{
+							state = State.HAVE_SLASH;
+							
 							//add token
-							tokens.add(new Token(Kind.DIV,startPos,1,line,startPosInLine, inputString));
-							//index
+//							tokens.add(new Token(Kind.DIV,startPos,1,line,startPosInLine, inputString));
+//							//index
 							pos++;
 							posInLine++;
 						}
@@ -331,6 +333,81 @@ public class Lexer implements IPLPLexer {
 					else
 					{
 						tokens.add(new Token(Kind.BANG, startPos,pos - startPos,line,startPosInLine, inputString));
+						state = State.START;
+					}
+				}
+				case HAVE_SCOMMENT ->
+				{
+					if(ch == '\n' | ch == '\r')
+					{
+						pos++;
+						posInLine++;
+						line++;
+						state = State.START;
+					}
+					else if(ch == EOFchar)
+					{
+						state = State.START;
+					}
+					else
+					{
+						pos++;
+						posInLine++;
+						ch = chars[pos];
+						state = State.HAVE_SCOMMENT;
+					}
+				}
+				case HAVE_MCOMMENT ->
+				{
+					
+					if(ch == '*')
+					{
+						pos++;
+						posInLine++;
+						ch = chars[pos];
+						if(ch == '/')	//if true, end of comment
+						{
+							pos++;
+							posInLine++;
+							state = State.START;	//go back to start after comment
+						}
+						else if (ch == EOFchar)
+						{
+							state = State.START;	
+						}
+						else	//else, keep looking for end of comment
+						{
+							state = State.HAVE_MCOMMENT;	
+						}
+					}
+					else
+					{
+						pos++;
+						posInLine++;
+						state = State.HAVE_MCOMMENT;
+					}
+
+				}
+				case HAVE_SLASH ->
+				{
+					
+					if(ch == '/')	//single line comment
+					{
+						pos++;		
+						posInLine++;
+						state = State.HAVE_SCOMMENT;
+
+					}
+					else if(ch == '*')	//multiline comment
+					{
+						pos++;		
+						posInLine++;
+						state = State.HAVE_MCOMMENT;
+						
+					}
+					else	//division
+					{
+						tokens.add(new Token(Kind.DIV,startPos,1,line,startPosInLine, inputString));
 						state = State.START;
 					}
 				}

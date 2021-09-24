@@ -17,7 +17,7 @@ public class Lexer implements IPLPLexer {
 	public HashMap<String, Kind> keywords = new HashMap<String, Kind>();
 	
 	//enums for dfa states
-	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART, HAVE_SLASH, HAVE_MCOMMENT, HAVE_SCOMMENT}
+	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART, HAVE_SLASH, HAVE_MCOMMENT, HAVE_SCOMMENT, HAVE_STRINGLIT}
 	
 	
 	public Lexer(String inputString) 
@@ -100,6 +100,13 @@ public class Lexer implements IPLPLexer {
 						case '=' ->
 						{							
 							state = State.HAVE_EQUAL;
+							//index
+							pos++;
+							posInLine++;
+						}
+						case '\"', '\'' ->
+						{							
+							state = State.HAVE_STRINGLIT;
 							//index
 							pos++;
 							posInLine++;
@@ -336,9 +343,36 @@ public class Lexer implements IPLPLexer {
 						state = State.START;
 					}
 				}
+				case HAVE_STRINGLIT ->
+				{
+					if( chars[pos] == '\'' || chars[pos] == '\"')	//if ch == ' || " , end of string lit, add token
+					{					
+						pos++;
+						posInLine++;
+						tokens.add(new Token(Kind.STRING_LITERAL, startPos,pos - startPos,line,startPosInLine, inputString));
+						state = State.START;
+					}
+					else if(false)	//need to figure out escape sequences
+					{
+						
+					}
+					else
+					{
+						pos++;		//if not end of string or escape seq, skip chars
+						posInLine++;
+					}
+					System.out.println(chars[pos]);
+					System.out.println(ch);
+										
+					
+					
+					
+					
+					
+				}
 				case HAVE_SCOMMENT ->
 				{
-					if(ch == '\n' | ch == '\r')
+					if(ch == '\n' || ch == '\r')
 					{
 						pos++;
 						posInLine++;

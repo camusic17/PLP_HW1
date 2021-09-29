@@ -14,7 +14,7 @@ public class CompilerComponentFactory {
 	public static IPLPParser getParser(String input) {
 		//TODO  create and return a Lexer instance to parse the given input.
 		
-		return new Parser(input);
+		return new Parser(new Lexer(input));
 	}
 	
 

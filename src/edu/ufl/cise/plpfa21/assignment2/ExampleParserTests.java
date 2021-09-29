@@ -90,6 +90,11 @@ class ExampleParserTests {
 		""";
 		syntaxErrorParse(input,2,19);
 		}
+		
+		@Test public void test6()  {
+			String input = "VAR x;";
+			noErrorParse(input);
+			}
 
 
 	

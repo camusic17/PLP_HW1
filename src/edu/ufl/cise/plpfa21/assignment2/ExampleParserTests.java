@@ -95,7 +95,21 @@ class ExampleParserTests {
 			String input = "VAR x;";
 			noErrorParse(input);
 			}
+		
+		@Test public void test7()  {
+			String input = "VAR x = 1+1;";
+			noErrorParse(input);
+			}
+		
+		@Test public void test8()  {
+			String input = "VAR x = 1+1";
+			syntaxErrorParse(input,1,11);
+			}
 
+		@Test public void test9()  {
+			String input = "VAR x 1+1;";
+			syntaxErrorParse(input,1,6);
+			}
 
 	
 

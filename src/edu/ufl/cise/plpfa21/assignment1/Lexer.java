@@ -361,8 +361,8 @@ public class Lexer implements IPLPLexer {
 						pos++;		//if not end of string or escape seq, skip chars
 						posInLine++;
 					}
-					System.out.println(chars[pos]);
-					System.out.println(ch);
+					//System.out.println(chars[pos]);
+					//System.out.println(ch);
 										
 					
 					

@@ -110,6 +110,20 @@ class ExampleParserTests {
 			String input = "VAR x 1+1;";
 			syntaxErrorParse(input,1,6);
 			}
+		
+		@Test public void test10() {
+			String input = """
+			VAR b: LIST[BOOLEAN];
+			""";
+			noErrorParse(input);
+			}
+		
+		@Test public void test11() {
+			String input = """
+			VAL a: INT = -abc[0];
+			""";
+			noErrorParse(input);
+			}
 
 	
 

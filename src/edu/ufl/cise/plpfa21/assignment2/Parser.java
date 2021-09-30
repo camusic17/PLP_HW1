@@ -95,17 +95,95 @@ public class Parser implements IPLPParser{
 	
 	public void program() throws SyntaxException
 	{
-		declaration();
+		while(!isKind(theToken.getKind(),IPLPToken.Kind.EOF))
+		{
+			declaration();
+		}
 	}
 	
-	public void block() throws SyntaxException
-	{
-		
+	public void block() throws SyntaxException	//while loop?
+	{		
+		while(!isKind(theToken.getKind(),IPLPToken.Kind.KW_END))
+		{
+			statement();
+		}
 	}
 	
 	public void statement() throws SyntaxException
 	{
-		
+		//done
+		if(isKind(theToken.getKind(),IPLPToken.Kind.KW_LET))
+		{
+			match(IPLPToken.Kind.KW_LET);
+			nameDef();
+			if(!isKind(theToken.getKind(),IPLPToken.Kind.SEMI))
+			{
+				match(IPLPToken.Kind.ASSIGN);
+				
+				expression();
+			}
+			match(IPLPToken.Kind.SEMI);
+					
+		}
+		//done?
+		else if(isKind(theToken.getKind(),IPLPToken.Kind.KW_SWITCH))
+		{
+			match(IPLPToken.Kind.KW_SWITCH);
+			expression();
+			
+			while(isKind(theToken.getKind(),IPLPToken.Kind.KW_CASE))				
+			{
+				match(IPLPToken.Kind.KW_CASE);
+				expression();
+				match(IPLPToken.Kind.COLON);
+				block();
+				
+			}
+			
+			match(IPLPToken.Kind.KW_DEFAULT);
+			block();
+			match(IPLPToken.Kind.KW_END);
+					
+		}
+		//done
+		else if(isKind(theToken.getKind(),IPLPToken.Kind.KW_IF))
+		{
+			match(IPLPToken.Kind.KW_IF);
+			expression();
+			match(IPLPToken.Kind.KW_DO);
+			block();
+			match(IPLPToken.Kind.KW_END);
+					
+		}
+		//done
+		else if(isKind(theToken.getKind(),IPLPToken.Kind.KW_WHILE))
+		{
+			match(IPLPToken.Kind.KW_WHILE);
+			expression();
+			match(IPLPToken.Kind.KW_DO);
+			block();
+			match(IPLPToken.Kind.KW_END);
+					
+		}
+		//done
+		else if(isKind(theToken.getKind(),IPLPToken.Kind.KW_RETURN))
+		{
+			match(IPLPToken.Kind.KW_RETURN);
+			expression();
+			match(IPLPToken.Kind.SEMI);
+		}
+		//done
+		else
+		{
+			expression();
+			if(!isKind(theToken.getKind(),IPLPToken.Kind.SEMI))
+			{
+				match(IPLPToken.Kind.ASSIGN);
+				
+				expression();
+			}
+			match(IPLPToken.Kind.SEMI);
+		}
 	}
 	
 	public void declaration() throws SyntaxException
@@ -137,15 +215,24 @@ public class Parser implements IPLPParser{
 			match(IPLPToken.Kind.IDENTIFIER);
 			match(IPLPToken.Kind.LPAREN);
 			
+			
+			
 			//optional nameDef
-			if(isKind(theToken.getKind(),IPLPToken.Kind.KW_FUN))
+			if(!isKind(theToken.getKind(),IPLPToken.Kind.RPAREN))
 			{
+				nameDef();
+				while(!isKind(theToken.getKind(),IPLPToken.Kind.RPAREN))
+				{
+					match(IPLPToken.Kind.COMMA);
+					nameDef();
+				}
 				
 			}
 			//optional type
-			if(isKind(theToken.getKind(),IPLPToken.Kind.KW_FUN))
+			if(isKind(theToken.getKind(),IPLPToken.Kind.COLON))
 			{
-				
+				match(IPLPToken.Kind.COLON);
+				type();
 			}
 			match(IPLPToken.Kind.KW_DO);
 			block();
@@ -163,6 +250,7 @@ public class Parser implements IPLPParser{
 			type();
 			
 		}
+		
 	}
 	
 	public void type() throws SyntaxException
@@ -318,17 +406,46 @@ public class Parser implements IPLPParser{
 		else if(isKind(theToken.getKind(),IPLPToken.Kind.STRING_LITERAL))
 		{		
 			match(IPLPToken.Kind.STRING_LITERAL);
+		}    
+		else if(isKind(theToken.getKind(),IPLPToken.Kind.LPAREN))
+		{		
+			match(IPLPToken.Kind.LPAREN);
+			expression();
+			match(IPLPToken.Kind.RPAREN);
 		}
+		//Identifier | Identifier  ( (Expression ( , Expression)* )? ) | Identifier [ Expression ] 
 		else if(isKind(theToken.getKind(),IPLPToken.Kind.IDENTIFIER))
 		{		
+			//first case
 			match(IPLPToken.Kind.IDENTIFIER);
+			
+			//second case
+			if(isKind(theToken.getKind(),IPLPToken.Kind.LPAREN))
+			{				
+				match(IPLPToken.Kind.LPAREN);				
+				//(Expression ( , Expression)* )?
+				
+				if(!isKind(theToken.getKind(),IPLPToken.Kind.RPAREN))
+				{
+					expression();
+					while(!isKind(theToken.getKind(),IPLPToken.Kind.RPAREN))
+					{
+						match(IPLPToken.Kind.COMMA);
+						expression();
+					}
+				}
+				
+			}
+			//third case
+			else if(isKind(theToken.getKind(),IPLPToken.Kind.LSQUARE))
+			{
+				match(IPLPToken.Kind.LSQUARE);
+				expression();
+				match(IPLPToken.Kind.RSQUARE);
+			}
+			
 		}
-		//need three more cases for  ( Expression ) | Identifier  ( (Expression ( , Expression)* )? )  |  Identifier [ Expression ]    
-
-//		else if(isKind(theToken.getKind(),IPLPToken.Kind.KW_FALSE))
-//		{		
-//			match(IPLPToken.Kind.KW_FALSE);
-//		}
+		
 	}
 	
 	

@@ -352,10 +352,10 @@ public class Lexer implements IPLPLexer {
 						tokens.add(new Token(Kind.STRING_LITERAL, startPos,pos - startPos,line,startPosInLine, inputString));
 						state = State.START;
 					}
-					else if(false)	//need to figure out escape sequences
-					{
-						
-					}
+//					else if(false)	//need to figure out escape sequences
+//					{
+//						
+//					}
 					else
 					{
 						pos++;		//if not end of string or escape seq, skip chars

@@ -203,6 +203,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 		});
 	}
 
+	@SuppressWarnings("unused")
 	@Test
 	public void test5() throws LexicalException {
 		String input = """
@@ -291,6 +292,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			IPLPToken token = lexer.nextToken();
 			Kind kind = token.getKind();
 			int pos = token.getCharPositionInLine();
+			@SuppressWarnings("unused")
 			int line = token.getLine();
 			assertEquals(kind, Kind.INT_LITERAL);
 			assertEquals(0,pos);
@@ -306,6 +308,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			IPLPToken token = lexer.nextToken();
 			Kind kind = token.getKind();
 			int pos = token.getCharPositionInLine();
+			@SuppressWarnings("unused")
 			int line = token.getLine();
 			assertEquals(kind, Kind.INT_LITERAL);
 			assertEquals(0, pos);
@@ -319,6 +322,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 		String input = "99999999999999999999999999999999999999999999999999999999999999999999999";
 		IPLPLexer lexer = getLexer(input);
 		assertThrows(LexicalException.class, () -> {
+			@SuppressWarnings("unused")
 			IPLPToken token = lexer.nextToken();
 		});
 	}
@@ -439,6 +443,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 	
 	}
 	
+	@SuppressWarnings("unused")
 	@Test
 	public void test19() throws LexicalException {
 		String input = "&1";

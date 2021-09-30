@@ -228,12 +228,15 @@ public class Parser implements IPLPParser{
 				}
 				
 			}
+			match(IPLPToken.Kind.RPAREN);
+			
 			//optional type
 			if(isKind(theToken.getKind(),IPLPToken.Kind.COLON))
 			{
 				match(IPLPToken.Kind.COLON);
 				type();
 			}
+			System.out.println(theToken.getKind());
 			match(IPLPToken.Kind.KW_DO);
 			block();
 			match(IPLPToken.Kind.KW_END);

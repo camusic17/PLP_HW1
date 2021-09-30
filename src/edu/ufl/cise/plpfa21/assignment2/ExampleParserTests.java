@@ -124,6 +124,17 @@ class ExampleParserTests {
 			""";
 			noErrorParse(input);
 			}
+		
+		@Test public void test12()  {
+			String input = """
+			FUN func() DO
+			WHILE x>0 DO x=x-1; END
+			END
+			""";
+			noErrorParse(input);
+			}
+		
+	
 
 	
 

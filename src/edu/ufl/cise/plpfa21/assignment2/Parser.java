@@ -2,6 +2,7 @@ package edu.ufl.cise.plpfa21.assignment2;
 
 
 import edu.ufl.cise.plpfa21.assignment1.*;
+import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
 
 
 public class Parser implements IPLPParser{
@@ -10,11 +11,15 @@ public class Parser implements IPLPParser{
 	IPLPToken theToken;
 	
 	@Override
-	public void parse() throws SyntaxException {
+	public IASTNode parse() throws SyntaxException {
 		// TODO Auto-generated method stub
 		
 		program();
 		matchEOF(theToken);
+		
+		throw new UnsupportedOperationException();
+		
+		//return null;
 		
 	}
 	

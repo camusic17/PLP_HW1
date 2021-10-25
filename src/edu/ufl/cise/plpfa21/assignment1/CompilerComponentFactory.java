@@ -6,16 +6,12 @@ import edu.ufl.cise.plpfa21.assignment2.Parser;
 public class CompilerComponentFactory {
 
 	public static IPLPLexer getLexer(String input) {
-		//TODO  create and return a Lexer instance to parse the given input.		
+		//Replace with whatever is needed for your lexer.
 		return new Lexer(input);
 	}
 	
-	@SuppressWarnings("exports")
 	public static IPLPParser getParser(String input) {
-		//TODO  create and return a Lexer instance to parse the given input.
-		
-		return new Parser(new Lexer(input));
+		//Replace this with whatever is needed for your parser.
+		return  new Parser(new Lexer(input));		
 	}
-	
-
 }

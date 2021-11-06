@@ -5,6 +5,7 @@ public class Token implements IPLPToken{
 	Kind kind;
 	public int pos, length, line, posInLine;
 	String input;
+	String text;
 	
 	Token(Kind kind, int pos, int length, int line, int posInLine, String input)
 	{
@@ -14,6 +15,10 @@ public class Token implements IPLPToken{
 		this.line = line; 
 		this.posInLine = posInLine;
 		this.input = input;
+		
+		this.text = input.substring(posInLine-1,posInLine-1+length);
+		
+		System.out.println("Kind: " + kind + " Pos: " + pos + " Length: " + length + " PosInLine: " + posInLine + " Text: " + text);
 	}
 
 	@Override
@@ -25,14 +30,7 @@ public class Token implements IPLPToken{
 	@Override
 	public String getText() {
 		// TODO Auto-generated method stub
-		if(this.input.substring(pos,pos+length).length()>0)
-		{
-			return this.input.substring(pos,pos+length);
-		}
-		else
-		{
-			return null;
-		}
+		return this.text;
 		
 		
 	}
@@ -53,7 +51,7 @@ public class Token implements IPLPToken{
 	public String getStringValue() {
 		// TODO Auto-generated method stub
 		//need to figure out EscapeSeq and StringLits
-		return null;
+		return text.substring(1,text.length()-1);
 	}
 
 	@Override

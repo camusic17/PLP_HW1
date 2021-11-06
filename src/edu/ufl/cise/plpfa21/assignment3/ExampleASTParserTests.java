@@ -349,8 +349,7 @@ class ExampleASTParserTests implements PLPTokenKinds {
 	
 	@Test public void test10() throws Exception{
 		String input = """
-		VAR A;
-		VAL B=0;
+		VAR A; VAL B=0;
 
 		""";
 		IASTNode ast = getAST(input);

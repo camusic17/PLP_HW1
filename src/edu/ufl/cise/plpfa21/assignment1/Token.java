@@ -1,5 +1,7 @@
 package edu.ufl.cise.plpfa21.assignment1;
 
+import java.util.Arrays;
+
 public class Token implements IPLPToken{
 	
 	Kind kind;
@@ -18,7 +20,8 @@ public class Token implements IPLPToken{
 		
 		this.text = input.substring(posInLine-1,posInLine-1+length);
 		
-		System.out.println("Kind: " + kind + " Pos: " + pos + " Length: " + length + " PosInLine: " + posInLine + " Text: " + text);
+		System.out.println("Token Created - Kind: " + kind + " Pos: " + pos + " Length: " + length + " PosInLine: " + posInLine + " Text: " + text);
+		
 	}
 
 	@Override
@@ -30,7 +33,29 @@ public class Token implements IPLPToken{
 	@Override
 	public String getText() {
 		// TODO Auto-generated method stub
-		return this.text;
+		int numChars = input.length();
+		char[] chars;
+		chars = Arrays.copyOf(input.toCharArray(), numChars + 1);
+		
+		if (this.kind == Kind.STRING_LITERAL) {
+			int startPos = this.pos + 1;
+			int n = this.length - 2;
+			
+			String s0 = String.copyValueOf(chars, startPos , n);
+			// Dealing with escapes in the string literal.
+			String s1 = s0.replace("\\r","\r");
+			String s2 = s1.replace("\\n","\n");
+			String s3 = s2.replace("\\b","\b");
+			String s4 = s3.replace("\\t","\t");
+			String s5 = s4.replace("\\'","\'");
+			String s6 = s5.replace("\\\"","\"");
+			String s7 = s6.replace("\\\\","\\");
+
+			return s7;
+		} else {
+			return String.copyValueOf(chars, this.pos, this.length);
+		}
+		//return this.text;
 		
 		
 	}

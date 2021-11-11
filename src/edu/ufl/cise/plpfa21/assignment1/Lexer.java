@@ -17,7 +17,7 @@ public class Lexer implements IPLPLexer {
 	public HashMap<String, Kind> keywords = new HashMap<String, Kind>();
 	
 	//enums for dfa states
-	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART, HAVE_SLASH, HAVE_MCOMMENT, HAVE_SCOMMENT, HAVE_STRINGLIT}
+	private enum State{START, HAVE_EQUAL, HAVE_AND, HAVE_OR, HAVE_NOT, INTLITERAL, IDENT_PART, HAVE_SLASH, HAVE_MCOMMENT, HAVE_SCOMMENT, HAVE_STRINGLIT,HAVE_QUOTE, ESCAPE_SEQ}
 	
 	
 	public Lexer(String inputString) 
@@ -28,10 +28,10 @@ public class Lexer implements IPLPLexer {
 		
 		//indexing setup
 		int pos = 0;
-		int startPos = 0;
+		int startPos = pos;
 		int line = 1;
 		int posInLine = 1;
-		int startPosInLine = 1;
+		int startPosInLine = posInLine;
 		
 		State state = State.START;
 		
@@ -71,12 +71,13 @@ public class Lexer implements IPLPLexer {
 			//System.out.println(pos);
 			//System.out.println("length: " + chars.length);
 			char ch = chars[pos];
+			//System.out.println("Char: " + ch);
 			switch(state)
 			{
 				case START ->
 				{
 					startPos = pos;
-					startPosInLine = posInLine;
+					//startPosInLine = posInLine;
 					switch(ch)
 					{
 						//need to handle other kinds of whitespace
@@ -85,31 +86,25 @@ public class Lexer implements IPLPLexer {
 							pos++;
 							posInLine++;
 						}
-						case '\n' ->
+						case '\n','\r' ->
 						{
 							pos++;
-							//pos = 0;
+							posInLine = 1;
 							line++;
-							posInLine = 1;
-						}
-						case '\r' ->
-						{
-							pos++;
-							posInLine = 1;
 						}
 						case '=' ->
 						{							
-							state = State.HAVE_EQUAL;
-							//index
+							startPosInLine = posInLine;
 							pos++;
 							posInLine++;
+							state = State.HAVE_EQUAL;
 						}
 						case '\"', '\'' ->
 						{							
-							state = State.HAVE_STRINGLIT;
-							//index
+							startPosInLine = posInLine;
 							pos++;
 							posInLine++;
+							state = State.HAVE_QUOTE;
 						}
 						case ',' ->
 						{
@@ -138,7 +133,7 @@ public class Lexer implements IPLPLexer {
 						case '(' ->
 						{
 							//add token
-							tokens.add(new Token(Kind.LPAREN,startPos,1,line,startPosInLine, inputString));
+							tokens.add(new Token(Kind.LPAREN,startPos,1,line,posInLine, inputString));
 							//index
 							pos++;
 							posInLine++;
@@ -210,18 +205,17 @@ public class Lexer implements IPLPLexer {
 						case '+' ->
 						{
 							//add token
-							tokens.add(new Token(Kind.PLUS,startPos,1,line,startPosInLine, inputString));
+							tokens.add(new Token(Kind.PLUS,startPos,1,line,posInLine, inputString));
 							//index
 							pos++;
 							posInLine++;
 						}
 						case '-' ->
 						{
-							//add token
-							tokens.add(new Token(Kind.MINUS,startPos,1,line,startPosInLine, inputString));
-							//index
+							startPosInLine = posInLine;
 							pos++;
 							posInLine++;
+							tokens.add(new Token(Kind.MINUS, startPos, 1, line, startPosInLine, inputString));
 						}
 						case '*' ->
 						{
@@ -234,22 +228,21 @@ public class Lexer implements IPLPLexer {
 						case '/' ->
 						{
 							state = State.HAVE_SLASH;
-							
-							//add token
-//							tokens.add(new Token(Kind.DIV,startPos,1,line,startPosInLine, inputString));
-//							//index
 							pos++;
 							posInLine++;
 						}
 						case '0','1','2','3','4','5','6','7','8','9' ->
 						{
-							state = State.INTLITERAL;
 							digits += ch;
+							System.out.println("got here 0");
+							startPosInLine = posInLine;
 							pos++;
 							posInLine++;
+							state = State.INTLITERAL;
 						}
 						default -> 
 						{
+							startPosInLine = posInLine;
 							if(Character.isJavaIdentifierStart(ch))
 							{
 								inProgIdent += ch;
@@ -272,20 +265,55 @@ public class Lexer implements IPLPLexer {
 						}
 					}
 				}
+				case ESCAPE_SEQ -> {
+					switch (ch) {
+						case 'b', 't', 'n', 'r', '"', '\'', '\\' -> {
+							pos++;
+							posInLine++;
+							state = State.HAVE_QUOTE;
+						}
+						default -> {
+							tokens.add(new Token(Kind.ERROR,startPos,pos - startPos,line,startPosInLine, inputString));
+						}
+					}
+				}
+				case HAVE_QUOTE -> {
+					switch (ch) {
+						case '"' -> {
+							tokens.add(new Token(Kind.STRING_LITERAL, startPos, 1 + pos - startPos, line, startPosInLine, inputString));
+							pos++;
+							posInLine++;
+							state = State.START;
+						}
+						case '\\' -> {
+							pos++;
+							posInLine++;
+							state = State.ESCAPE_SEQ;
+						}
+						case '\n', '\r' -> {
+							tokens.add(new Token(Kind.ERROR,startPos,pos - startPos,line,startPosInLine, inputString));
+						}
+						case EOFchar -> {
+							tokens.add(new Token(Kind.ERROR,startPos,pos - startPos,line,startPosInLine, inputString));
+						}
+						default -> {
+							pos++;
+							posInLine++;
+						}
+					}
+				}			
 				case HAVE_EQUAL ->
 				{
 					if(ch == '=')
 					{
+						tokens.add(new Token(Kind.EQUALS,startPos,2,line,startPosInLine, inputString));
 						pos++;
 						posInLine++;
-						tokens.add(new Token(Kind.EQUALS,startPos,pos - startPos,line,startPosInLine, inputString));
-						
 						state = State.START;
 					}
 					else
 					{
-						tokens.add(new Token(Kind.ASSIGN,startPos,pos - startPos,line,startPosInLine, inputString));
-						
+						tokens.add(new Token(Kind.ASSIGN,startPos,1,line,startPosInLine, inputString));					
 						state = State.START;
 					}
 				}
@@ -352,23 +380,13 @@ public class Lexer implements IPLPLexer {
 						tokens.add(new Token(Kind.STRING_LITERAL, startPos,pos - startPos,line,startPosInLine, inputString));
 						state = State.START;
 					}
-//					else if(false)	//need to figure out escape sequences
-//					{
-//						
-//					}
 					else
 					{
 						pos++;		//if not end of string or escape seq, skip chars
 						posInLine++;
 					}
 					//System.out.println(chars[pos]);
-					//System.out.println(ch);
-										
-					
-					
-					
-					
-					
+					//System.out.println(ch);	
 				}
 				case HAVE_SCOMMENT ->
 				{
@@ -501,7 +519,23 @@ public class Lexer implements IPLPLexer {
 					}
 				}
 			}
+			
+			
 		}
+		
+	//	System.out.println("Input String: " + inputString);
+		
+//		for(int i = 0; i < tokens.size(); i++)
+//		{
+//			System.out.println("Token text value: " + tokens.get(i).getText());
+//		}
+//		
+//		for(int i = 0; i < tokens.size(); i++)
+//		{
+//			System.out.println("Token string value: " + tokens.get(i).getStringValue());
+//		}
+		
+		
 		tokens.add(new Token(Kind.EOF,pos,0,line,startPosInLine, inputString));
 		
 		

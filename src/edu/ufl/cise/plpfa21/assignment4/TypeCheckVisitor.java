@@ -60,8 +60,81 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIBinaryExpression(IBinaryExpression n, Object arg) throws Exception {
-		//TODO
-		throw new UnsupportedOperationException("IMPLEMENT ME!");
+		//DONE?
+		Kind op = n.getOp();
+				
+		IType leftType = (IType) n.getLeft().visit(this, arg);
+		IType rightType = (IType) n.getRight().visit(this, arg);
+		//n.getRight().visit(this,arg);
+		
+		check(compatibleAssignmentTypes(leftType,rightType),n,"");
+		
+		if(op == Kind.EQUALS || op == Kind.NOT_EQUALS || op == Kind.GT || op == Kind.LT)
+		{
+			if(leftType == rightType)
+			{
+				n.setType(PrimitiveType__.booleanType);
+				return n.getType();
+			}
+			else
+			{
+				throw new TypeCheckException(n.getLeft().getType() + " != " +n.getRight().getType());
+			}
+		}
+		else if(op == Kind.PLUS)
+		{
+			n.setType(leftType);
+			if(leftType.isInt() && rightType.isInt())
+			{
+				n.setType(PrimitiveType__.intType);
+				return n.getType();
+			}
+			else if(leftType.isString() && rightType.isString())
+			{
+				n.setType(PrimitiveType__.stringType);
+				return n.getType();
+			}
+			else if(leftType.isList() && rightType.isList())
+			{
+				//How do I determine type of the list?
+				//check for type of elements in list 1
+				//if the type of elements are the same in list 2, return the element type
+				
+				
+				
+				//IType type = 
+				//IType type = ListType__.getElementType()
+				//n.setType(TypeKind.LIST);
+				
+			}
+			else
+			{
+				throw new TypeCheckException(n.getLeft().getType() + " != " +n.getRight().getType());
+			}
+		}
+		else if(op == Kind.MINUS || op == Kind.TIMES || op == Kind.DIV)
+		{
+			if (leftType.isInt() && rightType.isInt()) 
+			{
+				n.setType(PrimitiveType__.intType);
+				return n.getType();
+			}
+		}
+		else if(op == Kind.AND || op == Kind.OR)
+		{
+			if (leftType.isBoolean() && rightType.isBoolean()) 
+			{
+				n.setType(PrimitiveType__.booleanType);
+				return n.getType();
+			}
+		}
+		else
+		{
+			throw new TypeCheckException(n.getLeft().getType() + " != " +n.getRight().getType());
+		}
+		return null;
+		
+		//throw new UnsupportedOperationException("IMPLEMENT ME!");
 	}
 
 	/**
@@ -78,8 +151,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIBooleanLiteralExpression(IBooleanLiteralExpression n, Object arg) throws Exception {
-		//TODO
-		//throw new UnsupportedOperationException("IMPLEMENT ME!");
+		//DONE?
+		//throw new UnsupportedOperationException("IMPLEMENT ME!")
 		
 		IType type = PrimitiveType__.booleanType;
 		n.setType(type);
@@ -140,8 +213,17 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIIfStatement(IIfStatement n, Object arg) throws Exception {
-		//TODO
-		throw new UnsupportedOperationException("IMPLEMENT ME!");
+		//DONE?
+		//throw new UnsupportedOperationException("IMPLEMENT ME!");
+		
+		n.getGuardExpression().visit(this, arg);
+		n.getBlock().visit(this, arg);
+		if(n.getGuardExpression().getType() != PrimitiveType__.booleanType)
+		{
+			throw new TypeCheckException(n.getGuardExpression().getType() + " != BOOLEAN");
+		}
+		return arg;
+		
 	}
 
 	@Override
@@ -168,7 +250,20 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitILetStatement(ILetStatement n, Object arg) throws Exception {
 		//TODO
-		throw new UnsupportedOperationException("IMPLEMENT ME!");
+		
+		IExpression e = n.getExpression();
+		IType t = (IType) e.visit(this, arg);
+		
+		INameDef localDef = n.getLocalDef();
+		IType ldefType = (IType) localDef.visit(this, n);
+		IType infType = unifyAndCheck(ldefType, t, n);
+		localDef.setType(infType);
+		IBlock bl = n.getBlock();
+		bl.visit(this, arg);
+		return arg;
+		
+		
+		//throw new UnsupportedOperationException("IMPLEMENT ME!");
 	}
 
 	@Override
@@ -251,8 +346,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 	 */
 	@Override
 	public Object visitIReturnStatement(IReturnStatement n, Object arg) throws Exception {
-		//TODO
-		throw new UnsupportedOperationException("IMPLEMENT ME!");
+		//DONE?
+		//throw new UnsupportedOperationException("IMPLEMENT ME!");
+		
+		IExpression e = n.getExpression();
+		IType t = (IType) e.visit(this,arg);
+		
+		IFunctionDeclaration dec = (IFunctionDeclaration) arg;
+		check(compatibleAssignmentTypes(t,dec.getResultType()),n,"");
+		return arg;
 	}
 
 	@Override
@@ -290,7 +392,27 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitISwitchStatement(ISwitchStatement n, Object arg) throws Exception {
 		//TODO
-		throw new UnsupportedOperationException("IMPLEMENT ME!");
+		
+		IExpression e = n.getSwitchExpression();
+		IType t = (IType) e.visit(this, arg);
+		
+		check(t.isBoolean() || t.isInt() || t.isString(), n, "");
+		List<IExpression> exprs = n.getBranchExpressions();
+		List<IBlock> bls = n.getBlocks();
+		for (int i = 0; i < exprs.size(); i++)
+		{
+			IExpression branchExpr = exprs.get(i);
+			IType branchExprType = (IType) branchExpr.visit(this, arg);
+			check(compatibleAssignmentTypes(branchExprType, t), n, "");
+			check(isConstantExpression(branchExpr), n, "");
+			IBlock theBlock = bls.get(i);
+			theBlock.visit(this, arg);
+		}
+		IBlock defaultBlock = n.getDefaultBlock();
+		defaultBlock.visit(this, arg);
+		return arg;
+		
+		//throw new UnsupportedOperationException("IMPLEMENT ME!");
 	}
 
 	@Override
